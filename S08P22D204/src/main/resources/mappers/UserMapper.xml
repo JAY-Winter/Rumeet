@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.d204.rumeet.user.model.mapper.UserMapper">
+
+    <resultMap id="user" type="userDto">
+        <result column="id" property="id"/>
+        <result column="email" property="email"/>
+        <result column="password" property="password"/>
+        <result column="nickname" property="nickname"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="profile_img" property="profile"/>
+        <result column="height" property="height"/>
+        <result column="weight" property="weight"/>
+        <result column="oauth" property="oauth"/>
+        <result column="date" property="date"/>
+        <result column="state" property="state"/>
+        <result column="fcm_token" property="fcmToken"/>
+        <result column="friend_alarm" property="friendAlarm"/>
+        <result column="matching_alarm" property="matchingAlarm"/>
+    </resultMap>
+    <resultMap id="simple_user" type="simpleUserDto">
+        <result column="id" property="id"/>
+        <result column="email" property="email"/>
+        <result column="nickname" property="nickname"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="profile_img" property="profileImg"/>
+        <result column="date" property="date"/>
+        <result column="state" property="state"/>
+    </resultMap>
+
+    <select id="doLogin" parameterType="LoginDto" resultMap="user">
+        SELECT * FROM user_view WHERE email = #{email} and password = #{password}
+    </select>
+
+    <select id="getUserById" parameterType="int" resultMap="user">
+        SELECT * FROM user_view WHERE id = #{id};
+    </select>
+
+    <select id="getSimpleUserFcmInfoById" parameterType="int" resultType="SimpleUserFcmDto">
+        SELECT id, nickname, fcm_token, friend_alarm, matching_alarm FROM user_view WHERE id=#{id}
+    </select>
+
+    <select id="getSimpleUserById" parameterType="int" resultMap="simple_user">
+        SELECT id, email, nickname, age, gender, profile_img, date, state FROM user_view WHERE id = #{id};
+    </select>
+
+    <update id="modifyUser" parameterType="ModifyUserDto">
+        UPDATE user SET age = #{age}, gender = #{gender}, height = #{height}, weight = #{weight} WHERE (id = #{id});
+    </update>
+
+    <update id="delUser" parameterType="int">
+        UPDATE user SET state = -1 WHERE (id = #{id});
+    </update>
+
+    <select id="checkDuplication" parameterType="CheckDto" resultType="int">
+        SELECT COUNT(*) FROM user
+        <where>
+            <if test="type == 1">
+                nickname like #{value}
+            </if>
+            <if test="type == 2">
+                email like #{value}
+            </if>
+        </where>
+    </select>
+
+    <update id="modifyPwd" parameterType="ModifyPwdDto">
+        UPDATE user SET password = #{password} WHERE email = #{email};
+    </update>
+
+    <select id="getUserOauth" parameterType="string" resultMap="user">
+        SELECT * FROM user WHERE (oauth like #{tokenId});
+    </select>
+
+    <insert id="joinUser" parameterType="JoinUserDto" useGeneratedKeys="true" keyProperty="id">
+        INSERT user (email, password, nickname, profile_img, gender, age, height, weight, date)
+            VALUES(#{email},#{password},#{nickname},#{profile}, #{gender}, #{age},#{height},#{weight}, #{date});
+    </insert>
+
+    <insert id="joinKakaoUser" parameterType="JoinKakaoUserDto" useGeneratedKeys="true" keyProperty="id">
+        INSERT user (email, password, nickname, profile_img, gender, age, height, weight , oauth, date)
+            VALUES(#{email},#{password},#{nickname},#{profile}, #{gender}, #{age},#{height},#{weight}, #{oauth} , #{date});
+    </insert>
+
+    <update id="modifyUserProfile" parameterType="ProfileUserDto">
+        UPDATE user SET nickname = #{nickname},profile_img = #{profile} WHERE id = #{id};
+    </update>
+
+    <insert id="joinUserToRecord" parameterType="int">
+        INSERT INTO record (user_id)
+        VALUES (#{userId});
+    </insert>
+
+    <insert id="joinUserToBadge" parameterType="map">
+        INSERT INTO my_badge (user_id, badge_id, date)
+        VALUES (#{userId}, 17, #{date});
+    </insert>
+
+    <select id="checkExistsUseByEmail" parameterType="String" resultType="int">
+        SELECT id FROM user WHERE email = #{email}
+    </select>
+
+    <select id="getAlarmState" parameterType="int" resultType="AlarmStateDto">
+        SELECT friend_alarm, matching_alarm FROM user WHERE id = #{id};
+    </select>
+
+    <update id="modifyFriendAlarmState" parameterType="int">
+        UPDATE user SET friend_alarm = ${state} WHERE id =#{id};
+    </update>
+
+    <update id="modifyMatchingAlarmState" parameterType="int">
+        UPDATE user SET matching_alarm = ${state} WHERE id =#{id};
+    </update>
+
+
+    <select id="searchUsersByNickname" parameterType="String" resultType="UserRecordDto">
+        SELECT u.id,u.nickname,u.profile_img AS profileImg, r.total_km AS totalKm, r.total_time AS totalTime, r.average_pace AS pace
+        FROM user_view u
+                 LEFT JOIN record r ON u.id = r.user_id
+        WHERE u.nickname LIKE #{nickname};
+    </select>
+
+</mapper>
+
+

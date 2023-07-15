@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.d204.rumeet.chat.model.mapper.ChatMapper">
+    <insert id="makeRoom" parameterType="ChatRoomDto"  useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO room (user1,user2,date) VALUES (#{user1},#{user2},#{date})
+    </insert>
+
+    <select id="findChatRoom" parameterType="CreateChatRoomDto" resultType="ChatRoomDto">
+        SELECT * FROM room_view WHERE (user1 = #{user1} and user2 = #{user2}) or (user1 = #{user2} and user2 = #{user1});
+    </select>
+
+    <select id="getRoomById" parameterType="int" resultType="ChatRoomDto">
+        SELECT * FROM room WHERE id = #{id};
+    </select>
+
+    <select id="getChatRoom" parameterType="int" resultType="ChatRoomDto">
+        SELECT * FROM room_view WHERE (user1 = #{id} or user2 = #{id});
+    </select>
+
+    <update id="deleteRoomById" parameterType="int">
+        UPDATE room SET state = -1 WHERE id = #{id}
+    </update>
+</mapper>
